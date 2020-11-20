@@ -8,6 +8,7 @@ import java.util.Map;
 
 @IFMLLoadingPlugin.TransformerExclusions("net.glease.cofhcorefix.")
 @IFMLLoadingPlugin.SortingIndex(2000)
+@IFMLLoadingPlugin.MCVersion("1.7.10")
 @IFMLLoadingPlugin.DependsOn("cofh.asm.LoadingPlugin")
 public class LoadingPlugin implements IFMLLoadingPlugin {
     static boolean runtimeDeobfEnabled;
