@@ -1,0 +1,59 @@
+package net.glease.cofhcorefix;
+
+import net.minecraft.launchwrapper.IClassTransformer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.*;
+
+import java.util.ListIterator;
+
+import static org.objectweb.asm.Opcodes.ASM5;
+import static org.objectweb.asm.Opcodes.POP;
+
+public class WorldTransformer implements IClassTransformer {
+    private static final Logger LOGGER = LogManager.getLogger(WorldTransformer.class);
+
+    @Override
+    public byte[] transform(String name, String transformedName, byte[] basicClass) {
+        if ("net.minecraft.world.World".equals(transformedName)) {
+            LOGGER.info("Patching net.minecraft.world.World");
+            String[] names;
+            if (LoadingPlugin.runtimeDeobfEnabled) {
+                names = new String[]{"func_147448_a", "func_147455_a"};
+            } else {
+                names = new String[]{"func_147448_a", "setTileEntity"};
+            }
+            ClassReader cr = new ClassReader(basicClass);
+            ClassNode cn = new ClassNode(ASM5);
+            cr.accept(cn, ClassReader.EXPAND_FRAMES);
+
+            int pushReplaced = 0;
+
+            for (MethodNode m : cn.methods) {
+                for (ListIterator<AbstractInsnNode> it = m.instructions.iterator(); it.hasNext(); ) {
+                    AbstractInsnNode node = it.next();
+                    if (node instanceof MethodInsnNode) {
+                        MethodInsnNode n = (MethodInsnNode) node;
+                        if ("cofh/lib/util/LinkedHashList".equals(n.owner) &&
+                                "push".equals(n.name) &&
+                                "(Ljava/lang/Object;)Z".equals(n.desc)) {
+                            LOGGER.debug("Replacing LinkedHashList::push inside {}{}", n.name, n.desc);
+                            m.instructions.insertBefore(n, new InsnNode(POP));
+                            m.instructions.remove(n);
+                            pushReplaced++;
+                            break;
+                        }
+                    }
+                }
+            }
+            LOGGER.info("Removed {} occurrence of LinkedHashList::push", pushReplaced);
+            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            cn.accept(cw);
+            return cw.toByteArray();
+        } else {
+            return basicClass;
+        }
+    }
+}
