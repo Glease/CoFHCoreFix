@@ -13,18 +13,12 @@ import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.POP;
 
 public class WorldTransformer implements IClassTransformer {
-    private static final Logger LOGGER = LogManager.getLogger(WorldTransformer.class);
+    private static final Logger LOGGER = LogManager.getLogger("CoFHCoreFix");
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if ("net.minecraft.world.World".equals(transformedName)) {
             LOGGER.info("Patching net.minecraft.world.World");
-            String[] names;
-            if (LoadingPlugin.runtimeDeobfEnabled) {
-                names = new String[]{"func_147448_a", "func_147455_a"};
-            } else {
-                names = new String[]{"func_147448_a", "setTileEntity"};
-            }
             ClassReader cr = new ClassReader(basicClass);
             ClassNode cn = new ClassNode(ASM5);
             cr.accept(cn, ClassReader.EXPAND_FRAMES);

@@ -1,8 +1,6 @@
 package net.glease.cofhcorefix;
 
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
